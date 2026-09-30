@@ -1,4 +1,4 @@
-name: Daily Video Agent
+name: Kids Video
 
 on:
   workflow_dispatch:
@@ -13,21 +13,17 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ffmpeg
 
-      - name: Create test video
+      - name: Create colorful kids video
         run: |
           ffmpeg -y \
-            -f lavfi -i color=c=white:s=1280x720:d=5 \
-            -f lavfi -i sine=frequency=440:duration=5 \
-            -c:v libx264 \
-            -c:a aac \
-            -pix_fmt yuv420p \
-            daily-video.mp4
-
-          ls -lh daily-video.mp4
+            -f lavfi -i "color=c=lightblue:s=1280x720:d=12" \
+            -vf "drawbox=x=0:y=0:w=1280:h=720:color=lightgreen@0.35:t=fill,drawtext=text='Meri Pyari Kahani':fontcolor=black:fontsize=60:x=(w-text_w)/2:y=250,drawtext=text='Ek nayi kids adventure!':fontcolor=black:fontsize=42:x=(w-text_w)/2:y=350" \
+            -f lavfi -i "sine=frequency=523:duration=12" \
+            -c:v libx264 -c:a aac -pix_fmt yuv420p \
+            kids-video.mp4
 
       - name: Upload video
         uses: actions/upload-artifact@v4
         with:
-          name: daily-video
-          path: daily-video.mp4
-          if-no-files-found: error
+          name: kids-video
+          path: kids-video.mp4
