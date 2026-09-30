@@ -1,0 +1,13 @@
+name: Daily Video Agent
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "30 4 * * *"
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Test agent
+        run: echo "Daily YouTube Agent is working!"
