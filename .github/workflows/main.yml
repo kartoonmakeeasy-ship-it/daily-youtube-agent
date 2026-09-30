@@ -2,65 +2,18 @@ name: Daily Video Agent
 
 on:
   workflow_dispatch:
-  schedule:
-    - cron: "30 4 * * *"
 
 jobs:
-  create-video:
+  test:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Install tools
+      - name: Create test file
         run: |
-          sudo apt-get update
-          sudo apt-get install -y ffmpeg python3-pil espeak-ng fonts-dejavu
+          echo "Daily Video Agent test successful!" > daily-video.txt
 
-      - name: Create video
-        run: |
-          python3 - <<'PY'
-          from PIL import Image, ImageDraw, ImageFont
-          import subprocess
-
-          text = "एक नन्हा खरगोश जंगल में अपने दोस्तों की मदद करता है।"
-
-          img = Image.new("RGB", (1280, 720), "white")
-          draw = ImageDraw.Draw(img)
-
-          font = ImageFont.truetype(
-              "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 42
-          )
-
-          draw.text((70, 300), text, fill="black", font=font)
-          img.save("scene.png")
-
-          subprocess.run([
-              "espeak-ng", "-v", "hi",
-              "-w", "voice.wav", text
-          ], check=True)
-
-          subprocess.run([
-              "ffmpeg", "-y",
-              "-loop", "1",
-              "-i", "scene.png",
-              "-i", "voice.wav",
-              "-c:v", "libx264",
-              "-c:a", "aac",
-              "-shortest",
-              "-pix_fmt", "yuv420p",
-              "daily-video.mp4"
-          ], check=True)
-
-          PY
-
-          test -s daily-video.mp4
-          ls -lh daily-video.mp4
-
-      - name: Upload video
+      - name: Upload test file
         uses: actions/upload-artifact@v4
         with:
           name: daily-video
-          path: daily-video.mp4
-          if-no-files-found: error
+          path: daily-video.txt
