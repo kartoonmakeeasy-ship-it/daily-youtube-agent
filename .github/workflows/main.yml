@@ -4,16 +4,30 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  create-video:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Create test file
+      - name: Install FFmpeg
         run: |
-          echo "Daily Video Agent test successful!" > daily-video.txt
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg
 
-      - name: Upload test file
+      - name: Create test video
+        run: |
+          ffmpeg -y \
+            -f lavfi -i color=c=white:s=1280x720:d=5 \
+            -f lavfi -i sine=frequency=440:duration=5 \
+            -c:v libx264 \
+            -c:a aac \
+            -pix_fmt yuv420p \
+            daily-video.mp4
+
+          ls -lh daily-video.mp4
+
+      - name: Upload video
         uses: actions/upload-artifact@v4
         with:
           name: daily-video
-          path: daily-video.txt
+          path: daily-video.mp4
+          if-no-files-found: error
