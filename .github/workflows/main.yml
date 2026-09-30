@@ -6,8 +6,50 @@ on:
     - cron: "30 4 * * *"
 
 jobs:
-  test:
+  create-video:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Test agent
-        run: echo "Daily YouTube Agent is working!"
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ffmpeg python3-pil espeak-ng
+
+      - name: Create daily video
+        run: |
+          python3 - <<'PY'
+          from PIL import Image, ImageDraw
+          import subprocess
+
+          text = "एक छोटी सी प्यारी कहानी: एक नन्हा खरगोश जंगल में अपने दोस्तों की मदद करता है।"
+          img = Image.new("RGB", (1280, 720), "white")
+          d = ImageDraw.Draw(img)
+          d.text((80, 300), text, fill="black")
+          img.save("scene.png")
+
+          subprocess.run([
+              "espeak-ng", "-v", "hi",
+              "-w", "voice.wav", text
+          ])
+
+          subprocess.run([
+              "ffmpeg", "-y",
+              "-loop", "1", "-i", "scene.png",
+              "-i", "voice.wav",
+              "-c:v", "libx264",
+              "-tune", "stillimage",
+              "-c:a", "aac",
+              "-shortest",
+              "-pix_fmt", "yuv420p",
+              "daily-video.mp4"
+          ])
+          PY
+
+      - name: Save video
+        uses: actions/upload-artifact@v4
+        with:
+          name: daily-video
+          path: daily-video.mp4
